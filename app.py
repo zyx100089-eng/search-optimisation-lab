@@ -31,6 +31,17 @@ Use the sidebar to navigate between pages:
   and Held-Karp (exact TSP) on small grids.  Place waypoints and find the
   provably optimal tour.
 
+- **Heuristic Quality** — Sweep heuristic weights from 0 to 20x, see how
+  A\\*'s nodes/cost/memory change, and view failure cases with bad heuristics.
+  Includes a formal proof of A\\* optimality.
+
+- **Dijkstra vs A\\*** — Dedicated head-to-head comparison with side-by-side
+  exploration patterns and a scaling experiment from 10x10 to 100x100.
+
+- **Weighted Graphs** — Run algorithms on general weighted graphs (not grids).
+  Preset city maps, tricky shortcuts, and random topologies with visible
+  edge weights.
+
 ### Quick Start
 
 1. Open **Pathfinding Explorer** in the sidebar.

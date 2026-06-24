@@ -4,6 +4,8 @@ import heapq
 import time
 from dataclasses import dataclass, field
 
+from .memory_util import track_memory
+
 
 @dataclass
 class DijkstraResult:
@@ -13,11 +15,14 @@ class DijkstraResult:
     path_length: int
     path_cost: float
     runtime: float
+    peak_memory_bytes: int = 0
     exploration_order: list[list[tuple[int, int]]] = field(default_factory=list)
 
 
 def dijkstra(grid, start: tuple[int, int], goal: tuple[int, int]) -> DijkstraResult:
     t0 = time.perf_counter()
+    _mem_ctx = track_memory()
+    mem = _mem_ctx.__enter__()
     dist: dict[tuple[int, int], float] = {start: 0.0}
     parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
     pq = [(0.0, start)]
@@ -43,6 +48,7 @@ def dijkstra(grid, start: tuple[int, int], goal: tuple[int, int]) -> DijkstraRes
                 heapq.heappush(pq, (new_cost, nb))
 
     path = _reconstruct(parent, goal)
+    _mem_ctx.__exit__(None, None, None)
     return DijkstraResult(
         path=path,
         explored=explored_order,
@@ -50,6 +56,7 @@ def dijkstra(grid, start: tuple[int, int], goal: tuple[int, int]) -> DijkstraRes
         path_length=len(path),
         path_cost=dist.get(goal, 0.0),
         runtime=time.perf_counter() - t0,
+        peak_memory_bytes=mem["peak_bytes"],
     )
 
 

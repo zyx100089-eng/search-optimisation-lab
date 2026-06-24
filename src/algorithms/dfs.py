@@ -3,6 +3,8 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 
+from .memory_util import track_memory
+
 
 @dataclass
 class DFSResult:
@@ -12,11 +14,15 @@ class DFSResult:
     path_length: int
     path_cost: float
     runtime: float
+    peak_memory_bytes: int = 0
     exploration_order: list[list[tuple[int, int]]] = field(default_factory=list)
 
 
 def dfs(grid, start: tuple[int, int], goal: tuple[int, int]) -> DFSResult:
     t0 = time.perf_counter()
+    mem = {"peak_bytes": 0}
+    _mem_ctx = track_memory()
+    mem = _mem_ctx.__enter__()
     stack = [start]
     visited = {start}
     parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
@@ -40,6 +46,7 @@ def dfs(grid, start: tuple[int, int], goal: tuple[int, int]) -> DFSResult:
 
     path = _reconstruct(parent, goal)
     cost = sum(grid.cost(p) for p in path) if path else 0.0
+    _mem_ctx.__exit__(None, None, None)
     return DFSResult(
         path=path,
         explored=explored_order,
@@ -47,6 +54,7 @@ def dfs(grid, start: tuple[int, int], goal: tuple[int, int]) -> DFSResult:
         path_length=len(path),
         path_cost=cost,
         runtime=time.perf_counter() - t0,
+        peak_memory_bytes=mem["peak_bytes"],
         exploration_order=frontier_snapshots,
     )
 

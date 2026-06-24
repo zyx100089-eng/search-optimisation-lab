@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from .a_star import HEURISTICS, manhattan
+from .memory_util import track_memory
 
 
 @dataclass
@@ -16,6 +17,7 @@ class GreedyResult:
     path_length: int
     path_cost: float
     runtime: float
+    peak_memory_bytes: int = 0
     exploration_order: list[list[tuple[int, int]]] = field(default_factory=list)
 
 
@@ -29,6 +31,8 @@ def greedy_best_first(
         heuristic = HEURISTICS[heuristic]
 
     t0 = time.perf_counter()
+    _mem_ctx = track_memory()
+    mem = _mem_ctx.__enter__()
     parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
     counter = 0
     pq = [(heuristic(start, goal), counter, start)]
@@ -58,6 +62,7 @@ def greedy_best_first(
 
     path = _reconstruct(parent, goal)
     total_cost = cost_to.get(goal, 0.0) if path else 0.0
+    _mem_ctx.__exit__(None, None, None)
     return GreedyResult(
         path=path,
         explored=explored_order,
@@ -65,6 +70,7 @@ def greedy_best_first(
         path_length=len(path),
         path_cost=total_cost,
         runtime=time.perf_counter() - t0,
+        peak_memory_bytes=mem["peak_bytes"],
     )
 
 

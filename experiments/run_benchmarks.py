@@ -51,6 +51,7 @@ def main():
                         "path_cost": round(result.path_cost, 4),
                         "nodes_explored": result.explored_count,
                         "runtime_ms": round(result.runtime * 1000, 4),
+                        "peak_memory_kb": round(result.peak_memory_bytes / 1024, 2),
                         "found_path": result.path_length > 0,
                     })
                     count += 1

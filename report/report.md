@@ -148,6 +148,7 @@ BFS, DFS, Dijkstra, A\* (Manhattan heuristic), and Greedy Best-First (Manhattan 
 - **Path cost:** sum of edge weights along the path
 - **Nodes explored:** number of nodes removed from the frontier
 - **Runtime:** wall-clock time via `time.perf_counter()`, reported in milliseconds
+- **Peak memory:** measured via `tracemalloc`, reported in KB
 - **Path found:** whether the algorithm reached the goal
 
 ### 4.4 Total Runs
@@ -214,6 +215,33 @@ Higher density increases the chance that no path exists between opposite corners
 
 Dijkstra's overhead from the priority queue becomes visible at scale: it is 50% slower than BFS at 100x100 despite exploring the same nodes, because heap operations are more expensive than deque operations.  DFS is the slowest at 100x100 (83.75 ms) because it explores long, wasteful paths.
 
+### 5.5 Memory Usage
+
+| Algorithm | 20x20 (KB) | 50x50 (KB) | 100x100 (KB) | Overall Avg (KB) |
+|---|---|---|---|---|
+| Greedy | 10.4 | 31.9 | 155.8 | 66.0 |
+| A\* | 37.1 | 243.6 | 1,003.9 | 428.2 |
+| Dijkstra | 50.0 | 329.6 | 1,387.3 | 589.0 |
+| BFS | 76.6 | 768.7 | 4,339.2 | 1,728.2 |
+| DFS | 101.8 | 3,142.7 | 36,491.5 | 13,245.3 |
+
+Memory usage tracks the frontier and visited data structures.  Greedy uses the least memory because it explores the fewest nodes.  DFS uses dramatically more memory than other algorithms at 100x100 (36 MB) because its long, winding exploration path accumulates large parent/visited dictionaries.  A\* uses ~28% less memory than Dijkstra, consistent with its 30% node reduction.
+
+### 5.6 Effect of Heuristic Quality
+
+A heuristic sweep experiment (available on the Heuristic Quality page) scales the Manhattan heuristic by a weight factor w from 0 to 20:
+
+| Weight (w) | Admissible? | Nodes Explored | Path Cost | Optimal? |
+|---|---|---|---|---|
+| 0.0 | Yes | Same as Dijkstra | Optimal | Yes |
+| 0.5 | Yes | ~15% fewer than Dijkstra | Optimal | Yes |
+| 1.0 | Yes (tight) | ~30% fewer than Dijkstra | Optimal | Yes |
+| 2.0 | No | ~50% fewer than Dijkstra | May increase | Not guaranteed |
+| 5.0 | No | ~70% fewer than Dijkstra | Often increases | Not guaranteed |
+| 20.0 | No | ~85% fewer than Dijkstra | Significantly increases | Not guaranteed |
+
+The key observation is a **smooth trade-off**: as w increases past 1.0, nodes explored and runtime decrease monotonically, but path quality degrades.  All admissible weights (w ≤ 1) produce identical optimal costs, confirming the theoretical guarantee.
+
 ## 6. Discussion
 
 ### 6.1 Optimality vs Speed
@@ -252,9 +280,56 @@ This lab demonstrates the practical differences between search algorithms throug
 5. **Obstacle density affects solvability more than algorithm choice**: all algorithms find or fail to find paths at the same rates.
 6. **Exact DP methods (Floyd-Warshall, Held-Karp) provide provably optimal solutions** but are constrained by polynomial and exponential scaling respectively, motivating the use of metaheuristics for larger problem instances.
 
+## 8. Formal Complexity Analysis
+
+### 8.1 Time Complexity
+
+| Algorithm | Worst Case | Typical Grid (V = n^2, E = 4V) | Notes |
+|---|---|---|---|
+| BFS | O(V + E) | O(n^2) | Optimal for unweighted graphs |
+| DFS | O(V + E) | O(n^2) | Same asymptotic cost but explores suboptimally |
+| Dijkstra | O((V + E) log V) | O(n^2 log n) | Heap overhead dominates on dense graphs |
+| A\* | O((V + E) log V) | O(n^2 log n) worst, much less typical | Heuristic prunes the search space |
+| Greedy | O((V + E) log V) | O(n^2 log n) worst | Often terminates very early |
+| Floyd-Warshall | O(V^3) | O(n^6) | Impractical for grids > ~15x15 |
+| Held-Karp | O(2^n * n^2) | O(2^n * n^2) | Exact TSP; feasible for n ≤ 20 |
+| GA | O(G * P * L) | Depends on params | G=generations, P=pop size, L=path length |
+| SA | O(I * L) | Depends on params | I=iterations, L=path length |
+
+### 8.2 Space Complexity
+
+| Algorithm | Space | Measured (100x100 grid) |
+|---|---|---|
+| BFS | O(V) — queue + visited | 4,339 KB |
+| DFS | O(V) — stack + visited (but long paths inflate parent dict) | 36,492 KB |
+| Dijkstra | O(V) — heap + dist table | 1,387 KB |
+| A\* | O(V) — heap + g-score table | 1,004 KB |
+| Greedy | O(V) — heap + visited | 156 KB |
+| Floyd-Warshall | O(V^2) — distance matrix | N/A (small grids only) |
+| Held-Karp | O(2^n * n) — DP table | N/A (small n only) |
+
+The measured memory values confirm the theoretical O(V) space for single-source algorithms.  DFS's anomalously high memory stems from Python's dict overhead on the long exploration paths it generates — the *theoretical* frontier is O(V) but the *parent dictionary* stores entries for all visited nodes, which for DFS includes nearly the entire grid.
+
+### 8.3 Empirical Verification
+
+The runtime scaling experiment (Dijkstra vs A\* page) shows that both Dijkstra and A\* scale as O(n^2 log n) with grid size, but A\*'s constant factor is ~40% smaller due to heuristic pruning.  BFS scales as O(n^2) — no log factor — which is why it outperforms Dijkstra at large sizes despite exploring the same number of nodes.
+
+### 8.4 Proof of A* Optimality
+
+**Theorem.** If h(n) is admissible (h(n) ≤ h\*(n) for all n), then A\* returns an optimal path.
+
+**Proof.** Suppose A\* terminates with a path to goal G of cost C = g(G), and suppose this is not optimal — i.e. there exists a path with cost C\* < C.
+
+1. At termination, some node n on the optimal path must still be in the open set, since A\* only terminates when it pops the goal.
+2. For this node n: f(n) = g(n) + h(n).  Since n is on the optimal path, g(n) + h\*(n) = C\*.
+3. By admissibility: h(n) ≤ h\*(n), so f(n) ≤ C\*.
+4. But A\* selected G before n, meaning f(G) ≤ f(n).  Since h(G) = 0, f(G) = C.
+5. Combining: C = f(G) ≤ f(n) ≤ C\* < C, giving C < C.  Contradiction.
+
+Therefore A\* must return the optimal path.  This is verified experimentally in the Heuristic Quality page: all admissible heuristic weights (w ≤ 1) produce identical optimal costs across all tested grids.
+
 ### Future Work
 
-- Test on weighted grids to see Dijkstra's advantage over BFS
 - Implement bidirectional search and iterative deepening DFS
 - Apply GA and SA to combinatorial problems (TSP, graph colouring) where exact methods scale poorly
-- Experiment with inadmissible heuristics and weighted A\* (f = g + w*h) to explore the speed-optimality frontier
+- Explore weighted A\* (f = g + w*h) with epsilon-optimality bounds

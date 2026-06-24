@@ -6,6 +6,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable
 
+from .memory_util import track_memory
+
 
 @dataclass
 class AStarResult:
@@ -15,6 +17,7 @@ class AStarResult:
     path_length: int
     path_cost: float
     runtime: float
+    peak_memory_bytes: int = 0
     exploration_order: list[list[tuple[int, int]]] = field(default_factory=list)
 
 
@@ -30,10 +33,32 @@ def chebyshev(a: tuple[int, int], b: tuple[int, int]) -> float:
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 
 
+def inadmissible_greedy(a: tuple[int, int], b: tuple[int, int]) -> float:
+    return (abs(a[0] - b[0]) + abs(a[1] - b[1])) * 5.0
+
+
+def inadmissible_extreme(a: tuple[int, int], b: tuple[int, int]) -> float:
+    return (abs(a[0] - b[0]) + abs(a[1] - b[1])) * 20.0
+
+
+def zero_heuristic(a: tuple[int, int], b: tuple[int, int]) -> float:
+    return 0.0
+
+
+def weighted_manhattan(weight: float):
+    def h(a: tuple[int, int], b: tuple[int, int]) -> float:
+        return (abs(a[0] - b[0]) + abs(a[1] - b[1])) * weight
+    h.__name__ = f"manhattan_x{weight}"
+    return h
+
+
 HEURISTICS: dict[str, Callable] = {
     "manhattan": manhattan,
     "euclidean": euclidean,
     "chebyshev": chebyshev,
+    "zero": zero_heuristic,
+    "inadmissible_5x": inadmissible_greedy,
+    "inadmissible_20x": inadmissible_extreme,
 }
 
 
@@ -47,6 +72,8 @@ def a_star(
         heuristic = HEURISTICS[heuristic]
 
     t0 = time.perf_counter()
+    _mem_ctx = track_memory()
+    mem = _mem_ctx.__enter__()
     g_score: dict[tuple[int, int], float] = {start: 0.0}
     parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
     counter = 0
@@ -75,6 +102,7 @@ def a_star(
                 heapq.heappush(pq, (f, counter, nb))
 
     path = _reconstruct(parent, goal)
+    _mem_ctx.__exit__(None, None, None)
     return AStarResult(
         path=path,
         explored=explored_order,
@@ -82,6 +110,7 @@ def a_star(
         path_length=len(path),
         path_cost=g_score.get(goal, 0.0),
         runtime=time.perf_counter() - t0,
+        peak_memory_bytes=mem["peak_bytes"],
     )
 
 
