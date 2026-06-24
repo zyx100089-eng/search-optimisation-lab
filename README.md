@@ -10,6 +10,7 @@ graph-search algorithms and metaheuristic optimisers.
 | **Uninformed Search** | BFS, DFS |
 | **Informed Search** | Dijkstra, A\*, Greedy Best-First |
 | **Metaheuristics** | Genetic Algorithm, Simulated Annealing |
+| **Dynamic Programming** | Floyd-Warshall (all-pairs shortest paths), Held-Karp (exact TSP) |
 
 ## Setup
 
@@ -29,6 +30,7 @@ Navigate between pages using the sidebar:
 - **Pathfinding Explorer** — compare BFS / DFS / Dijkstra / A\* / Greedy on random grids
 - **Metaheuristics** — GA and SA with tunable parameters and convergence plots
 - **Benchmark Summary** — aggregated metrics from systematic experiments
+- **Dynamic Programming** — Floyd-Warshall all-pairs shortest paths and Held-Karp exact TSP solver
 
 ## Run Benchmarks
 
@@ -51,7 +53,7 @@ search_optimisation_lab/
 ├── app.py                    # Streamlit entry point
 ├── src/
 │   ├── graph.py              # Grid and Graph representations
-│   └── algorithms/           # BFS, DFS, Dijkstra, A*, Greedy, GA, SA
+│   └── algorithms/           # BFS, DFS, Dijkstra, A*, Greedy, GA, SA, Floyd-Warshall, Held-Karp
 │   └── visualisation/        # Grid drawing and metrics helpers
 ├── pages/                    # Streamlit multi-page modules
 ├── experiments/              # Benchmarking scripts

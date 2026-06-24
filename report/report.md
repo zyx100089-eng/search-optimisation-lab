@@ -75,6 +75,26 @@ A neighbourhood-search method that starts from a greedy initial path and iterati
 - **Time complexity:** O(iterations x path_length)
 - **Optimality:** No guarantee; approximate
 
+### 2.8 Floyd-Warshall Algorithm
+
+An all-pairs shortest paths algorithm that computes the optimal distance between every pair of nodes simultaneously.  It uses a three-nested-loop relaxation over intermediate nodes.
+
+- **Time complexity:** O(V^3)
+- **Space complexity:** O(V^2)
+- **Optimality:** Yes (exact)
+
+Floyd-Warshall is practical for small grids (up to ~15x15, i.e. ~225 nodes) but becomes prohibitively expensive for larger instances.  Its advantage is that once computed, any source-target query is answered in O(V) time (path reconstruction) rather than requiring a new search.
+
+### 2.9 Held-Karp Algorithm (Exact TSP)
+
+The Held-Karp algorithm solves the Travelling Salesman Problem exactly using dynamic programming with bitmask subsets.  It considers all possible subsets of cities and finds the minimum-cost Hamiltonian cycle.
+
+- **Time complexity:** O(2^n * n^2)
+- **Space complexity:** O(2^n * n)
+- **Optimality:** Yes (exact)
+
+This is practical for up to ~20 cities.  For the grid TSP variant, Floyd-Warshall first computes pairwise shortest distances between waypoints, then Held-Karp finds the optimal tour.
+
 ## 3. Implementation Design
 
 ### 3.1 Grid Representation
@@ -103,6 +123,7 @@ The Streamlit app provides three pages:
 1. **Pathfinding Explorer** — configurable grid with multi-algorithm comparison, side-by-side grid plots, and a metrics table with summary indicators (lowest cost, fastest, fewest nodes).
 2. **Metaheuristics** — GA and SA with tunable parameters alongside an A\* baseline, plus convergence plots (fitness over generations for GA, cost over iterations for SA).
 3. **Benchmark Summary** — loads precomputed CSV results, provides interactive filters by grid size and density, and displays aggregated bar charts.
+4. **Dynamic Programming** — two tabs: Floyd-Warshall computes all-pairs shortest paths on small grids and compares against A\*; Held-Karp solves exact TSP on user-placed waypoints, visualised with numbered cities and directional arrows showing the optimal tour.
 
 Grid visualisations use Matplotlib with colour coding: dark grey for obstacles, light blue for explored cells, blue for the path, green for start, red for goal.
 
@@ -213,6 +234,13 @@ A\*'s efficiency depends entirely on heuristic quality.  Manhattan distance is a
 
 GA and SA were implemented as optional extensions.  On small grids (15x15 with 20% obstacles), both can find near-optimal paths, but they are orders of magnitude slower than A\* due to the large number of evaluations required.  They are more interesting for combinatorial optimisation problems where exact methods are intractable.
 
+### 6.4 Dynamic Programming
+
+Floyd-Warshall and Held-Karp demonstrate the power and limitations of exact DP methods:
+
+- **Floyd-Warshall** produces identical costs to A\* on all tested grids (verified in unit tests), confirming both implementations are correct.  Its O(V^3) cost makes it impractical beyond ~15x15 grids (~225 nodes), but once computed, any pair query is instant.  This is useful when many source-target queries are needed on the same graph.
+- **Held-Karp** solves TSP exactly, which no search algorithm or metaheuristic can guarantee.  On a 10x10 grid with 6 waypoints, it finds the optimal tour in under 1 ms.  However, the O(2^n * n^2) scaling limits it to ~20 cities — at 20 cities the bitmask has over 1 million states.  For larger instances, the metaheuristic approaches (GA, SA) become the only viable option, illustrating the complementary relationship between exact and approximate methods.
+
 ## 7. Conclusion
 
 This lab demonstrates the practical differences between search algorithms through hands-on implementation and empirical evaluation.  The main findings are:
@@ -222,6 +250,7 @@ This lab demonstrates the practical differences between search algorithms throug
 3. **BFS outperforms Dijkstra on unweighted grids** due to simpler data structures, despite theoretical equivalence.
 4. **DFS is unsuitable for shortest-path problems** but illustrates the importance of exploration strategy.
 5. **Obstacle density affects solvability more than algorithm choice**: all algorithms find or fail to find paths at the same rates.
+6. **Exact DP methods (Floyd-Warshall, Held-Karp) provide provably optimal solutions** but are constrained by polynomial and exponential scaling respectively, motivating the use of metaheuristics for larger problem instances.
 
 ### Future Work
 

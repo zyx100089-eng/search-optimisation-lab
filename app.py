@@ -27,6 +27,10 @@ Use the sidebar to navigate between pages:
   and obstacle densities.  Compare algorithms on path length, nodes explored,
   and runtime.
 
+- **Dynamic Programming** — Explore Floyd-Warshall (all-pairs shortest paths)
+  and Held-Karp (exact TSP) on small grids.  Place waypoints and find the
+  provably optimal tour.
+
 ### Quick Start
 
 1. Open **Pathfinding Explorer** in the sidebar.
