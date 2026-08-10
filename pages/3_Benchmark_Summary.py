@@ -1,6 +1,4 @@
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
+import os
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -29,17 +27,31 @@ selected_densities = st.multiselect("Obstacle densities", densities, default=den
 
 filtered = df[df["grid_size"].isin(selected_sizes) & df["obstacle_density"].isin(selected_densities)]
 
-agg_cols = {
+found = filtered[filtered["found_path"] == True]
+
+if found.empty:
+    st.warning(
+        "No successful runs for the selected filters — path-cost/runtime averages "
+        "are only computed over runs that found a path.  Try a lower obstacle density."
+    )
+    st.stop()
+
+cost_cols = {
     "avg_path_cost": ("path_cost", "mean"),
     "avg_nodes_explored": ("nodes_explored", "mean"),
     "avg_runtime_ms": ("runtime_ms", "mean"),
-    "path_found_pct": ("found_path", "mean"),
 }
 if "peak_memory_kb" in filtered.columns:
-    agg_cols["avg_memory_kb"] = ("peak_memory_kb", "mean")
+    cost_cols["avg_memory_kb"] = ("peak_memory_kb", "mean")
 
-agg = filtered.groupby("algorithm").agg(**agg_cols).reset_index()
-agg["path_found_pct"] = (agg["path_found_pct"] * 100).round(1)
+agg = found.groupby("algorithm").agg(**cost_cols).reset_index()
+
+found_pct = filtered.groupby("algorithm")["found_path"].mean().reset_index()
+found_pct["path_found_pct"] = (found_pct["found_path"] * 100).round(1)
+found_pct = found_pct[["algorithm", "path_found_pct"]]
+
+agg = agg.merge(found_pct, on="algorithm", how="left")
+agg["avg_path_cost"] = agg["avg_path_cost"].round(2)
 agg = agg.round(2)
 
 st.subheader("Aggregated Metrics")

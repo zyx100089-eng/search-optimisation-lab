@@ -1,8 +1,5 @@
 """Unit tests for dynamic programming algorithms."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import math
 import pytest
 from src.graph import Grid

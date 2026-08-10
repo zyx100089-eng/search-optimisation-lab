@@ -4,9 +4,6 @@ Demonstrates algorithms on hand-crafted and random graph topologies
 with varying edge weights.
 """
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import random
 import math
 import heapq
@@ -30,30 +27,28 @@ how Dijkstra, A\\*, and Greedy behave with real edge weights.
 
 def _dijkstra_graph(graph, start, goal, positions):
     t0 = time.perf_counter()
-    _mem_ctx = track_memory()
-    mem = _mem_ctx.__enter__()
-    dist = {start: 0.0}
-    parent = {start: None}
-    pq = [(0.0, start)]
-    explored = []
-    closed = set()
-    while pq:
-        cost, node = heapq.heappop(pq)
-        if node in closed:
-            continue
-        closed.add(node)
-        explored.append(node)
-        if node == goal:
-            break
-        for nb, w in graph.neighbours(node):
-            nc = cost + w
-            if nb not in dist or nc < dist[nb]:
-                dist[nb] = nc
-                parent[nb] = node
-                heapq.heappush(pq, (nc, nb))
-    path = _recon(parent, goal)
-    _mem_ctx.__exit__(None, None, None)
-    return path, dist.get(goal, float("inf")), explored, time.perf_counter() - t0, mem["peak_bytes"]
+    with track_memory() as mem:
+        dist = {start: 0.0}
+        parent = {start: None}
+        pq = [(0.0, start)]
+        explored = []
+        closed = set()
+        while pq:
+            cost, node = heapq.heappop(pq)
+            if node in closed:
+                continue
+            closed.add(node)
+            explored.append(node)
+            if node == goal:
+                break
+            for nb, w in graph.neighbours(node):
+                nc = cost + w
+                if nb not in dist or nc < dist[nb]:
+                    dist[nb] = nc
+                    parent[nb] = node
+                    heapq.heappush(pq, (nc, nb))
+        path = _recon(parent, goal)
+    return path, dist.get(goal, float("inf")), explored, time.perf_counter() - t0, mem.peak_bytes
 
 
 def _astar_graph(graph, start, goal, positions):
@@ -65,32 +60,30 @@ def _astar_graph(graph, start, goal, positions):
         return math.hypot(x1 - x2, y1 - y2)
 
     t0 = time.perf_counter()
-    _mem_ctx = track_memory()
-    mem = _mem_ctx.__enter__()
-    g = {start: 0.0}
-    parent = {start: None}
-    counter = 0
-    pq = [(h(start), counter, start)]
-    explored = []
-    closed = set()
-    while pq:
-        _f, _c, node = heapq.heappop(pq)
-        if node in closed:
-            continue
-        closed.add(node)
-        explored.append(node)
-        if node == goal:
-            break
-        for nb, w in graph.neighbours(node):
-            ng = g[node] + w
-            if nb not in g or ng < g[nb]:
-                g[nb] = ng
-                parent[nb] = node
-                counter += 1
-                heapq.heappush(pq, (ng + h(nb), counter, nb))
-    path = _recon(parent, goal)
-    _mem_ctx.__exit__(None, None, None)
-    return path, g.get(goal, float("inf")), explored, time.perf_counter() - t0, mem["peak_bytes"]
+    with track_memory() as mem:
+        g = {start: 0.0}
+        parent = {start: None}
+        counter = 0
+        pq = [(h(start), counter, start)]
+        explored = []
+        closed = set()
+        while pq:
+            _f, _c, node = heapq.heappop(pq)
+            if node in closed:
+                continue
+            closed.add(node)
+            explored.append(node)
+            if node == goal:
+                break
+            for nb, w in graph.neighbours(node):
+                ng = g[node] + w
+                if nb not in g or ng < g[nb]:
+                    g[nb] = ng
+                    parent[nb] = node
+                    counter += 1
+                    heapq.heappush(pq, (ng + h(nb), counter, nb))
+        path = _recon(parent, goal)
+    return path, g.get(goal, float("inf")), explored, time.perf_counter() - t0, mem.peak_bytes
 
 
 def _greedy_graph(graph, start, goal, positions):
@@ -102,33 +95,31 @@ def _greedy_graph(graph, start, goal, positions):
         return math.hypot(x1 - x2, y1 - y2)
 
     t0 = time.perf_counter()
-    _mem_ctx = track_memory()
-    mem = _mem_ctx.__enter__()
-    parent = {start: None}
-    cost_to = {start: 0.0}
-    counter = 0
-    pq = [(h(start), counter, start)]
-    explored = []
-    closed = set()
-    while pq:
-        _h, _c, node = heapq.heappop(pq)
-        if node in closed:
-            continue
-        closed.add(node)
-        explored.append(node)
-        if node == goal:
-            break
-        for nb, w in graph.neighbours(node):
-            if nb not in closed:
-                nc = cost_to[node] + w
-                if nb not in cost_to or nc < cost_to[nb]:
-                    cost_to[nb] = nc
-                    parent[nb] = node
-                counter += 1
-                heapq.heappush(pq, (h(nb), counter, nb))
-    path = _recon(parent, goal)
-    _mem_ctx.__exit__(None, None, None)
-    return path, cost_to.get(goal, float("inf")), explored, time.perf_counter() - t0, mem["peak_bytes"]
+    with track_memory() as mem:
+        parent = {start: None}
+        cost_to = {start: 0.0}
+        counter = 0
+        pq = [(h(start), counter, start)]
+        explored = []
+        closed = set()
+        while pq:
+            _h, _c, node = heapq.heappop(pq)
+            if node in closed:
+                continue
+            closed.add(node)
+            explored.append(node)
+            if node == goal:
+                break
+            for nb, w in graph.neighbours(node):
+                if nb not in closed:
+                    nc = cost_to[node] + w
+                    if nb not in cost_to or nc < cost_to[nb]:
+                        cost_to[nb] = nc
+                        parent[nb] = node
+                    counter += 1
+                    heapq.heappush(pq, (h(nb), counter, nb))
+        path = _recon(parent, goal)
+    return path, cost_to.get(goal, float("inf")), explored, time.perf_counter() - t0, mem.peak_bytes
 
 
 def _recon(parent, goal):
@@ -277,13 +268,25 @@ if run_graph:
     import pandas as pd
     data = []
     for name, (path, cost, explored, runtime, mem_bytes) in results.items():
-        data.append({
-            "Algorithm": name,
-            "Path Cost": round(cost, 1),
-            "Path": " → ".join(str(n) for n in path) if path else "No path",
-            "Nodes Explored": len(explored),
-            "Runtime (ms)": round(runtime * 1000, 3),
-            "Memory (KB)": round(mem_bytes / 1024, 1),
-            "Optimal": "Yes" if abs(cost - results["Dijkstra"][1]) < 0.01 else "No",
-        })
+        opt_cost = results["Dijkstra"][1]
+        if cost == float("inf"):
+            data.append({
+                "Algorithm": name,
+                "Path Cost": "inf",
+                "Path": "No path",
+                "Nodes Explored": len(explored),
+                "Runtime (ms)": round(runtime * 1000, 3),
+                "Memory (KB)": round(mem_bytes / 1024, 1),
+                "Optimal": "No path",
+            })
+        else:
+            data.append({
+                "Algorithm": name,
+                "Path Cost": round(cost, 1),
+                "Path": " → ".join(str(n) for n in path) if path else "No path",
+                "Nodes Explored": len(explored),
+                "Runtime (ms)": round(runtime * 1000, 3),
+                "Memory (KB)": round(mem_bytes / 1024, 1),
+                "Optimal": "Yes" if abs(cost - opt_cost) < 0.01 else "No",
+            })
     st.dataframe(pd.DataFrame(data), use_container_width=True, hide_index=True)

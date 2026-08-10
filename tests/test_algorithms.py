@@ -1,8 +1,5 @@
 """Unit tests for search algorithms."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import pytest
 from src.graph import Grid
 from src.algorithms.bfs import bfs

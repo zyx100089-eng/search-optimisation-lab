@@ -1,9 +1,7 @@
 """Run systematic benchmarks across grid sizes and obstacle densities."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import csv
+import os
 from src.graph import Grid
 from src.algorithms.bfs import bfs
 from src.algorithms.dfs import dfs

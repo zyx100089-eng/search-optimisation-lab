@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "search-optimisation-lab"
+version = "1.0.0"
+description = "Interactive lab for graph-search algorithms, metaheuristics, dynamic programming, and learned heuristics"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Alan Zhang" },
+]
+keywords = ["search", "a-star", "dijkstra", "genetic-algorithm", "simulated-annealing", "floyd-warshall", "held-karp", "learned-heuristic"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "streamlit>=1.30",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

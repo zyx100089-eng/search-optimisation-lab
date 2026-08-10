@@ -3,9 +3,6 @@
 Shows exactly why A* outperforms Dijkstra, how much, and when the gap grows.
 """
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np

@@ -7,9 +7,6 @@ Demonstrates:
 - Failure cases with bad heuristics
 """
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
@@ -77,7 +74,7 @@ with tab1:
         ws = [r["weight"] for r in results]
 
         ax = axes[0, 0]
-        costs = [r["path_cost"] for r in results]
+        costs = [r["path_cost"] if r["path_cost"] != float("inf") else 0 for r in results]
         colors = ["green" if r["admissible"] else "red" for r in results]
         ax.bar(range(len(ws)), costs, color=colors)
         ax.set_xticks(range(len(ws)))
@@ -126,7 +123,8 @@ with tab1:
         st.markdown("**Legend:** 🟢 Admissible (w ≤ 1) — guaranteed optimal. 🔴 Inadmissible (w > 1) — may be suboptimal.")
 
         if optimal_cost:
-            suboptimal = [(r["weight"], r["path_cost"]) for r in results if r["path_cost"] > optimal_cost + 0.01]
+            suboptimal = [(r["weight"], r["path_cost"]) for r in results
+                          if r["path_cost"] != float("inf") and r["path_cost"] > optimal_cost + 0.01]
             if suboptimal:
                 st.warning(f"Suboptimal paths found at weights: {', '.join(f'w={w:.1f} (cost={c:.1f}, +{((c/optimal_cost)-1)*100:.1f}%)' for w, c in suboptimal)}")
             else:
@@ -175,19 +173,32 @@ with tab2:
         st.subheader("Comparison")
         data = []
         for name, r in results.items():
-            data.append({
-                "Heuristic": name,
-                "Path Cost": round(r.path_cost, 1),
-                "Cost Ratio": f"{r.path_cost / r_good.path_cost:.2f}x" if r_good.path_cost > 0 else "N/A",
-                "Nodes Explored": r.explored_count,
-                "Runtime (ms)": round(r.runtime * 1000, 3),
-                "Memory (KB)": round(r.peak_memory_bytes / 1024, 1),
-                "Optimal?": "Yes" if abs(r.path_cost - r_good.path_cost) < 0.01 else "No",
-            })
+            if not r.path:
+                data.append({
+                    "Heuristic": name,
+                    "Path Cost": "inf",
+                    "Cost Ratio": "N/A",
+                    "Nodes Explored": r.explored_count,
+                    "Runtime (ms)": round(r.runtime * 1000, 3),
+                    "Memory (KB)": round(r.peak_memory_bytes / 1024, 1),
+                    "Optimal?": "No path",
+                })
+            else:
+                data.append({
+                    "Heuristic": name,
+                    "Path Cost": round(r.path_cost, 1),
+                    "Cost Ratio": f"{r.path_cost / r_good.path_cost:.2f}x" if r_good.path_cost > 0 else "N/A",
+                    "Nodes Explored": r.explored_count,
+                    "Runtime (ms)": round(r.runtime * 1000, 3),
+                    "Memory (KB)": round(r.peak_memory_bytes / 1024, 1),
+                    "Optimal?": "Yes" if abs(r.path_cost - r_good.path_cost) < 0.01 else "No",
+                })
         import pandas as pd
         st.dataframe(pd.DataFrame(data), use_container_width=True, hide_index=True)
 
-        if r_5x.path_cost > r_good.path_cost + 0.01 or r_20x.path_cost > r_good.path_cost + 0.01:
+        found_subopt = (r_5x.path and r_5x.path_cost > r_good.path_cost + 0.01) or \
+                       (r_20x.path and r_20x.path_cost > r_good.path_cost + 0.01)
+        if found_subopt:
             st.error(
                 "The inadmissible heuristics returned **suboptimal** paths.  "
                 "Notice how the 20x heuristic explores far fewer nodes but at the "

@@ -1,52 +1,45 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
+from .base import SearchResult, reconstruct_path, compute_path_cost
 from .memory_util import track_memory
 
 
 @dataclass
-class DFSResult:
-    path: list[tuple[int, int]]
-    explored: list[tuple[int, int]]
-    explored_count: int
-    path_length: int
-    path_cost: float
-    runtime: float
-    peak_memory_bytes: int = 0
-    exploration_order: list[list[tuple[int, int]]] = field(default_factory=list)
+class DFSResult(SearchResult):
+    """DFS result (same fields as SearchResult, kept for import compatibility)."""
+    pass
 
 
 def dfs(grid, start: tuple[int, int], goal: tuple[int, int]) -> DFSResult:
     t0 = time.perf_counter()
-    mem = {"peak_bytes": 0}
-    _mem_ctx = track_memory()
-    mem = _mem_ctx.__enter__()
-    stack = [start]
-    visited = {start}
-    parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
-    explored_order: list[tuple[int, int]] = []
-    frontier_snapshots: list[list[tuple[int, int]]] = []
+    with track_memory() as mem:
+        stack = [start]
+        visited = {start}
+        parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
+        explored_order: list[tuple[int, int]] = []
+        frontier_snapshots: list[list[tuple[int, int]]] = []
 
-    while stack:
-        frontier_snapshots.append(list(stack))
-        node = stack.pop()
-        explored_order.append(node)
+        while stack:
+            frontier_snapshots.append(list(stack))
+            node = stack.pop()
+            explored_order.append(node)
 
-        if node == goal:
-            break
+            if node == goal:
+                break
 
-        for (nr, nc), _ in grid.neighbours(*node):
-            nb = (nr, nc)
-            if nb not in visited:
-                visited.add(nb)
-                parent[nb] = node
-                stack.append(nb)
+            for (nr, nc), _ in grid.neighbours(*node):
+                nb = (nr, nc)
+                if nb not in visited:
+                    visited.add(nb)
+                    parent[nb] = node
+                    stack.append(nb)
 
-    path = _reconstruct(parent, goal)
-    cost = sum(grid.cost(p) for p in path) if path else 0.0
-    _mem_ctx.__exit__(None, None, None)
+        path = reconstruct_path(parent, goal)
+        cost = compute_path_cost(grid, path)
+
     return DFSResult(
         path=path,
         explored=explored_order,
@@ -54,17 +47,6 @@ def dfs(grid, start: tuple[int, int], goal: tuple[int, int]) -> DFSResult:
         path_length=len(path),
         path_cost=cost,
         runtime=time.perf_counter() - t0,
-        peak_memory_bytes=mem["peak_bytes"],
+        peak_memory_bytes=mem.peak_bytes,
         exploration_order=frontier_snapshots,
     )
-
-
-def _reconstruct(parent, goal):
-    if goal not in parent:
-        return []
-    path = []
-    node = goal
-    while node is not None:
-        path.append(node)
-        node = parent[node]
-    return path[::-1]

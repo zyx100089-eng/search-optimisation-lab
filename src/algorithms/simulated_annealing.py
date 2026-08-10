@@ -37,18 +37,6 @@ def _greedy_initial_path(grid, start, goal, rng) -> list[tuple[int, int]]:
     return path
 
 
-def _path_cost(grid, path: list[tuple[int, int]]) -> float:
-    if not path:
-        return float("inf")
-    cost = 0.0
-    for i in range(1, len(path)):
-        cost += grid.cost(path[i])
-    if path[-1] != path[0]:
-        last = path[-1]
-        goal = path[-1]
-    return cost
-
-
 def _evaluate(grid, path, goal) -> float:
     if not path:
         return float("inf")
