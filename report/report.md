@@ -333,11 +333,14 @@ at 20% density, then evaluates on 30 *unseen* grids (seeds 200–229).
 
 | Heuristic | Avg Nodes Explored | Avg Path Cost | Optimal? |
 |---|---|---|---|
-| Dijkstra (teacher) | — | 110.7 | Yes (reference) |
-| Manhattan | 231 | 110.7 | Yes |
-| Learned | 171 | 110.7 | Yes (100% of test grids) |
+| Dijkstra (teacher) | — | 38.0 | Yes (reference) |
+| Manhattan | 231 | 38.0 | Yes |
+| Learned | 171 | 38.0 | Yes (100% of test grids) |
 
-![Learned heuristic trade-off](fig5_learned_heuristic_tradeoff.png)
+*Note on the reference cost: the 38.0 is the mean Dijkstra cost on the
+20×20 test grids themselves (26 solvable of 30).  The 110.7 figure in
+earlier drafts was borrowed from the §5.1 all-sizes benchmark (different
+grids) and is not the right reference for this experiment.*
 
 **Key observations:**
 - The learned heuristic explores **26% fewer nodes** than Manhattan while
@@ -372,7 +375,17 @@ A\*'s efficiency depends entirely on heuristic quality.  Manhattan distance is a
 
 ### 6.3 Metaheuristics
 
-GA and SA were implemented as optional extensions.  On small grids (15×15 with 20% obstacles), both can find near-optimal paths, but they are orders of magnitude slower than A\* due to the large number of evaluations required.  They are more interesting for combinatorial optimisation problems where exact methods are intractable.
+GA and SA were implemented as optional extensions.  On small grids (15×15 with
+20% obstacles), both can find near-optimal paths, but they are orders of
+magnitude slower than A\* due to the large number of evaluations required.
+They are more interesting for combinatorial optimisation problems where exact
+methods are intractable.
+
+*Caveat: this claim is anecdotal — the GA/SA runs were not part of the
+committed benchmark (results.csv covers the five pathfinding algorithms
+only), and no GA/SA experiment output is committed.  The implementations
+are unit-tested, but the "near-optimal on 15×15" statement is from
+interactive runs, not a reproducible artifact.*
 
 ### 6.4 Dynamic Programming
 

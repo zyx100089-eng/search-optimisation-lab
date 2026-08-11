@@ -1,6 +1,6 @@
 # Search & Optimisation Algorithm Lab
 
-[![Tests](https://github.com/alanzhang/search_optimisation_lab/actions/workflows/tests.yml/badge.svg)](https://github.com/alanzhang/search_optimisation_lab/actions/workflows/tests.yml)
+[![Tests](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 
 An interactive lab for implementing, visualising, and benchmarking classical
