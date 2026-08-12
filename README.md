@@ -90,3 +90,20 @@ search is a *bounded-suboptimal* planner — the same regime as weighted A\*.  T
 **Learned Heuristic** page measures the resulting speed-up versus the
 suboptimality ratio across many unseen grids, illustrating the core AI-planning
 trade-off between search effort and solution quality.
+
+## Why this lab, and what I learned
+
+I wanted to see classical search algorithms as one family — uninformed,
+informed, metaheuristic, exact — rather than ten isolated textbook chapters.
+The visualiser was the tool that made the differences visible: the same grid,
+three exploration patterns that you can stare at (Dijkstra's frontier, A\*'s
+directed cone, Greedy's narrow sprint). The learned-heuristic experiment came
+out of a question the visualiser raised: A\* with Manhattan is great on empty
+grids and blind in mazes — so can the *structure of the grid itself* predict
+the remaining cost better than a hand-picked heuristic? The answer in my
+experiments was: sometimes, at the price of admissibility — which is exactly
+the trade-off the lab's final page measures.
+
+The honest limit of this project is breadth: ten algorithms implemented well
+rather than one studied deeply. The learned-heuristic experiment is the part
+I'd defend, and the one I'd take further.
