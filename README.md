@@ -91,6 +91,12 @@ search is a *bounded-suboptimal* planner — the same regime as weighted A\*.  T
 suboptimality ratio across many unseen grids, illustrating the core AI-planning
 trade-off between search effort and solution quality.
 
+![Learned heuristic: speed vs optimality](report/fig5_learned_heuristic_tradeoff.png)
+
+*Each point is one unseen 20×20 grid: how much search effort the
+learned heuristic saves over Manhattan (x-axis) versus how much
+solution quality it costs (y-axis).*
+
 ## Why this lab, and what I learned
 
 I wanted to see classical search algorithms as one family — uninformed,
