@@ -3,7 +3,7 @@
 [![Tests](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 
-> **Live demo:** [linear-algebra-optimisation-visualiser-cufqkcdc6ycv62hixumjva.streamlit.app](https://linear-algebra-optimisation-visualiser-cufqkcdc6ycv62hixumjva.streamlit.app)
+> **Live demo:** [search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app](https://search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app)
 
 An interactive lab for implementing, visualising, and benchmarking classical
 graph-search algorithms, metaheuristic optimisers, exact dynamic-programming
