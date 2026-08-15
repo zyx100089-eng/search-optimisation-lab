@@ -5,13 +5,22 @@
 
 > **Live demo:** [search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app](https://search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app)
 
-An interactive lab for implementing, visualising, and benchmarking classical
-graph-search algorithms, metaheuristic optimisers, exact dynamic-programming
-solvers, and a **learned (machine-learning) heuristic for A\***.
+An interactive lab for implementing, visualising, and benchmarking
+classical graph-search algorithms, metaheuristic optimisers, exact
+dynamic-programming solvers, and a **learned (machine-learning)
+heuristic for A\***.
 
 ![Three algorithms on the same 25x25 grid](docs/showcase.png)
 
 *Dijkstra (optimal, 185 nodes) | A\* with Manhattan (optimal, 132 nodes) | Greedy Best-First (suboptimal, 54 nodes) — same grid, same start/goal, three very different exploration patterns.*
+
+## Why this lab
+
+I wanted to see classical search algorithms as one family — uninformed,
+informed, metaheuristic, exact — rather than ten isolated textbook
+chapters. The visualiser was the tool that made the differences
+visible: the same grid, three exploration patterns that you can stare
+at (Dijkstra's frontier, A\*'s directed cone, Greedy's narrow sprint).
 
 ## Algorithms
 
@@ -79,19 +88,21 @@ search_optimisation_lab/
 └── .github/workflows/        # CI: runs pytest on push
 ```
 
-## Overview of the Learned Heuristic
+## The learned heuristic
 
-The headline experiment trains a linear model to predict the *true remaining
-cost* `h*(n)` from lightweight geometric features (Manhattan/Euclidean distance,
-local obstacle density, degree, distance to nearest wall, goal alignment).
-Labels come from Dijkstra.  The model is trained from scratch with mini-batch
-gradient descent (no scikit-learn) so the mathematics is explicit.
+The headline experiment trains a linear model to predict the *true
+remaining cost* `h*(n)` from lightweight geometric features
+(Manhattan/Euclidean distance, local obstacle density, degree,
+distance to nearest wall, goal alignment). Labels come from Dijkstra.
+The model is trained from scratch with mini-batch gradient descent (no
+scikit-learn) so the mathematics is explicit.
 
-Because the learned heuristic is **not** guaranteed admissible, the resulting
-search is a *bounded-suboptimal* planner — the same regime as weighted A\*.  The
-**Learned Heuristic** page measures the resulting speed-up versus the
-suboptimality ratio across many unseen grids, illustrating the core AI-planning
-trade-off between search effort and solution quality.
+Because the learned heuristic is **not** guaranteed admissible, the
+resulting search is a *bounded-suboptimal* planner — the same regime
+as weighted A\*. The **Learned Heuristic** page measures the resulting
+speed-up versus the suboptimality ratio across many unseen grids,
+illustrating the core AI-planning trade-off between search effort and
+solution quality.
 
 ![Learned heuristic: speed vs optimality](report/fig5_learned_heuristic_tradeoff.png)
 
@@ -99,19 +110,13 @@ trade-off between search effort and solution quality.
 learned heuristic saves over Manhattan (x-axis) versus how much
 solution quality it costs (y-axis).*
 
-## Why this lab, and what I learned
+The learned-heuristic experiment came out of a question the visualiser
+raised: A\* with Manhattan is great on empty grids and blind in mazes —
+so can the *structure of the grid itself* predict the remaining cost
+better than a hand-picked heuristic? The answer in my experiments was:
+sometimes, at the price of admissibility — which is exactly the
+trade-off the lab's final page measures.
 
-I wanted to see classical search algorithms as one family — uninformed,
-informed, metaheuristic, exact — rather than ten isolated textbook chapters.
-The visualiser was the tool that made the differences visible: the same grid,
-three exploration patterns that you can stare at (Dijkstra's frontier, A\*'s
-directed cone, Greedy's narrow sprint). The learned-heuristic experiment came
-out of a question the visualiser raised: A\* with Manhattan is great on empty
-grids and blind in mazes — so can the *structure of the grid itself* predict
-the remaining cost better than a hand-picked heuristic? The answer in my
-experiments was: sometimes, at the price of admissibility — which is exactly
-the trade-off the lab's final page measures.
-
-The honest limit of this project is breadth: ten algorithms implemented well
-rather than one studied deeply. The learned-heuristic experiment is the part
-I'd defend, and the one I'd take further.
+The honest limit of this project is breadth: ten algorithms
+implemented well rather than one studied deeply. The learned-heuristic
+experiment is the part I'd defend, and the one I'd take further.
