@@ -1,26 +1,17 @@
 # Search & Optimisation Algorithm Lab
 
 [![Tests](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/zyx100089-eng/search-optimisation-lab/actions/workflows/tests.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 
 > **Live demo:** [search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app](https://search-optimization-lab-alanzeauvbaoqr1737acu.streamlit.app)
 
-An interactive lab for implementing, visualising, and benchmarking
-classical graph-search algorithms, metaheuristic optimisers, exact
-dynamic-programming solvers, and a **learned (machine-learning)
-heuristic for A\***.
+An interactive lab for implementing, visualising, and benchmarking classical graph-search
+algorithms, metaheuristic optimisers, exact dynamic-programming solvers, and a **learned
+(machine-learning) heuristic for A\***. I built it to see classical search as one family —
+uninformed, informed, metaheuristic, exact — rather than ten isolated textbook chapters.
 
 ![Three algorithms on the same 25x25 grid](docs/showcase.png)
 
 *Dijkstra (optimal, 185 nodes) | A\* with Manhattan (optimal, 132 nodes) | Greedy Best-First (suboptimal, 54 nodes) — same grid, same start/goal, three very different exploration patterns.*
-
-## Why this lab
-
-I wanted to see classical search algorithms as one family — uninformed,
-informed, metaheuristic, exact — rather than ten isolated textbook
-chapters. The visualiser was the tool that made the differences
-visible: the same grid, three exploration patterns that you can stare
-at (Dijkstra's frontier, A\*'s directed cone, Greedy's narrow sprint).
 
 ## Algorithms
 
@@ -40,13 +31,13 @@ source venv/bin/activate
 pip install -e ".[test]"
 ```
 
-## Run the Visualiser
+## Run it
 
 ```bash
 streamlit run app.py
 ```
 
-Navigate between pages using the sidebar:
+Pages in the sidebar:
 - **Pathfinding Explorer** — compare BFS / DFS / Dijkstra / A\* / Greedy on random grids
 - **Metaheuristics** — GA and SA with tunable parameters and convergence plots
 - **Benchmark Summary** — aggregated metrics from systematic experiments
@@ -54,9 +45,9 @@ Navigate between pages using the sidebar:
 - **Heuristic Quality** — heuristic-weight sweep, inadmissible failure cases, and a formal proof of A\* optimality
 - **Dijkstra vs A\*** — side-by-side exploration patterns and a scaling experiment
 - **Weighted Graphs** — algorithms on general weighted graph topologies (not grids)
-- **Learned Heuristic** — train a linear model on Dijkstra-labelled data and use it as an A\* heuristic; analyse the speed-up vs suboptimality trade-off
+- **Learned Heuristic** — train a linear model on Dijkstra-labelled data and use it as an A\* heuristic; analyse speed-up vs suboptimality
 
-## Run Benchmarks
+## Benchmarks
 
 ```bash
 python experiments/run_benchmarks.py
@@ -64,7 +55,7 @@ python experiments/run_benchmarks.py
 
 This generates `experiments/results.csv`, which the Benchmark Summary page reads.
 
-## Run Tests
+## Tests
 
 ```bash
 pytest tests/ -v
@@ -90,33 +81,25 @@ search_optimisation_lab/
 
 ## The learned heuristic
 
-The headline experiment trains a linear model to predict the *true
-remaining cost* `h*(n)` from lightweight geometric features
-(Manhattan/Euclidean distance, local obstacle density, degree,
-distance to nearest wall, goal alignment). Labels come from Dijkstra.
-The model is trained from scratch with mini-batch gradient descent (no
-scikit-learn) so the mathematics is explicit.
+The headline experiment trains a linear model to predict the *true remaining cost* `h*(n)` from
+lightweight geometric features (Manhattan/Euclidean distance, local obstacle density, degree,
+distance to nearest wall, goal alignment). Labels come from Dijkstra. The model is trained from
+scratch with mini-batch gradient descent (no scikit-learn) so the mathematics is explicit.
 
-Because the learned heuristic is **not** guaranteed admissible, the
-resulting search is a *bounded-suboptimal* planner — the same regime
-as weighted A\*. The **Learned Heuristic** page measures the resulting
-speed-up versus the suboptimality ratio across many unseen grids,
-illustrating the core AI-planning trade-off between search effort and
-solution quality.
+Because the learned heuristic is **not** guaranteed admissible, the resulting search is a
+*bounded-suboptimal* planner — the same regime as weighted A\*. The **Learned Heuristic** page
+measures the speed-up versus suboptimality ratio across many unseen grids, illustrating the
+core AI-planning trade-off between search effort and solution quality.
 
 ![Learned heuristic: speed vs optimality](report/fig5_learned_heuristic_tradeoff.png)
 
-*Each point is one unseen 20×20 grid: how much search effort the
-learned heuristic saves over Manhattan (x-axis) versus how much
-solution quality it costs (y-axis).*
+*Each point is one unseen 20×20 grid: how much search effort the learned heuristic saves over
+Manhattan (x-axis) versus how much solution quality it costs (y-axis).*
 
-The learned-heuristic experiment came out of a question the visualiser
-raised: A\* with Manhattan is great on empty grids and blind in mazes —
-so can the *structure of the grid itself* predict the remaining cost
-better than a hand-picked heuristic? The answer in my experiments was:
-sometimes, at the price of admissibility — which is exactly the
-trade-off the lab's final page measures.
+The experiment came out of a question the visualiser raised: A\* with Manhattan is great on
+empty grids and blind in mazes — so can the *structure of the grid itself* predict the
+remaining cost better than a hand-picked heuristic? In my experiments: sometimes, at the price
+of admissibility — exactly the trade-off the lab's final page measures.
 
-The honest limit of this project is breadth: ten algorithms
-implemented well rather than one studied deeply. The learned-heuristic
-experiment is the part I'd defend, and the one I'd take further.
+The honest limit of this project is breadth: ten algorithms implemented well rather than one
+studied deeply. The learned-heuristic experiment is the part I'd defend, and the one I'd take further.
